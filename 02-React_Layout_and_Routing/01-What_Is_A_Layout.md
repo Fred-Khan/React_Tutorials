@@ -332,4 +332,4 @@ We will add **React Router**, so pages like Home, About and Login become real ro
 
 ---
 
-[Next](02-Introducing_React_Router.md)
+[Back](../01-React_Setup_and_Component/05-Guess_The_Number_Game.md) -- [Next](02-Introducing_React_Router.md)
