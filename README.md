@@ -1,4 +1,4 @@
-# React_Tutorials
+# React Tutorials
 Collection of React Tutorials and Sample Codes
 
 ## Contributing
