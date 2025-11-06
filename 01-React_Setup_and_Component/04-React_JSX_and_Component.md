@@ -180,6 +180,8 @@ function App() {
     </div>
   );
 }
+
+export default App; // Exports the component for use elsewhere.
 ```
 
 <details>
