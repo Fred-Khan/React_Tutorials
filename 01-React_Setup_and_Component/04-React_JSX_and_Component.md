@@ -109,18 +109,16 @@ export default App; // Exports the component for use elsewhere.
 ### 4. Create a new file: `src/components/Greeting.tsx`
 
 ```tsx
-import React from 'react';
-
 interface GreetingProps {
   name: string;
   age?: number; // Optional prop
 }
 
-const Greeting: React.FC<GreetingProps> = ({ name, age }) => {
+const Greeting = ({ name, age }: GreetingProps) => {
   return (
     <div>
       <h2>Hello, {name}!</h2>
-      {age && <p>You are {age} years old.</p>}
+      {age && <p>You are {age} years old.</p>} {/* If age exists (truthy), it renders the paragraph with age; otherwise, nothing. && is a shorthand for "if true, then render this".*/}
     </div>
   );
 };
@@ -131,13 +129,12 @@ export default Greeting;
 <summary>Show me the Line-by-Line Explanation for Greeting.tsx</summary>
 
 >
->### Line-by-Line Explanation for  `src/App.tsx`:
->- `import React from 'react';`: Imports React for component creation.
+>### Line-by-Line Explanation for  `Greeting.tsx`:
 >- `interface GreetingProps {`: Defines a TypeScript interface (like a blueprint) for the props this component expects.
 >- `name: string;`: Specifies that `name` must be a string (required prop).
->- `age?: number; // Optional prop`: `age` is optional (`?`) and must be a number if provided. The comment explains it's optional.
+>- `age?: number; // Optional prop`: `age` is optional (`?`) and must be a number if provided.
 >- `}`: Closes the interface.
->- `const Greeting: React.FC<GreetingProps> = ({ name, age }) => {`: Declares the Greeting component as a constant arrow function. `React.FC<GreetingProps>` types it as a functional component using the GreetingProps interface. It destructures `name` and `age` from props.
+>- `const Greeting = ({ name, age }: GreetingProps) => {` // Declares the Greeting component as a constant arrow function
 >- `return (`: Starts the JSX return.
 >- `<div>`: A container div.
 >- `<h2>Hello, {name}!</h2>`: Heading that inserts the `name` prop dynamically.
@@ -151,7 +148,7 @@ export default Greeting;
 
 <br>
 
-- :bulb: Save the file and notice that the **HMR** has not updated! This is because we have created the component called Greeting.tsx but we have not ***"used"*** it yet!
+- Save the file and notice that the **HMR** has not updated! This is because we have created the component called Greeting.tsx but we have not ***"used"*** it yet!
 
 ---
 
