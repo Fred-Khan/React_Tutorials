@@ -5,13 +5,15 @@
 
 ✅ Understand what **Protected Routes** are in React
 ✅ Prevent access to pages unless the user is logged in
+✅ JWT, sessions, and route protection
 ✅ Create a `<ProtectedRoute>` wrapper component
 ✅ Apply it to the `/dashboard` (logged-in users only)
-✅ Apply a **second protection layer** for future admin-only pages
-✅ Enable **Row Level Security (RLS)** in Supabase
-✅ Write policies so **only admins can manage user profiles**
 
 ---
+## 🧠 JWT Brief Explaination
+
+**JWT (JSON Web Token)** is like a digital "ID card" the server issues **after** you log in.
+It’s stored locally and automatically sent with every request to prove identity.
 
 ## 🧠 What Are Protected Routes?
 
@@ -80,10 +82,10 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 
   // While checking auth state, don't show anything (prevents flicker)
   if (isAuthenticated === null) {
-    return null; // or return a loading spinner if you want
+    return null; // or return a loading spinner if you want =)
   }
 
-  // If NOT logged in, redirect to Login page
+  // If NOT logged in, redirect to Home page
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
     // OPTIONAL: Change "/"  to "/login" if you prefer sending users back to Login Page
@@ -107,9 +109,28 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 | `<Navigate to="/login" />` | Redirects user away when not logged in                   |
 | `children`                 | Whatever page you're trying to protect (Dashboard, etc.) |
 
+
+---
+
+## ✅ Optional Variant
+If you want to *change redirect behaviour*, swap this:
+
+```tsx
+return <Navigate to="/" replace />; // redirect to home page
+```
+
+with:
+
+```tsx
+return <Navigate to="/login" replace />; // redirect to login page
+```
+
 ---
 
 ## 🛠 Step 2 — Apply Protected Route in `App.tsx`
+
+- Insert the `import ProtectedRoute` statement.
+- Replace the `<Route path="/dashboard"` statement.
 
 ```tsx
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -128,21 +149,6 @@ import Dashboard from "./pages/Dashboard"; // already created earlier
 ✅ Page refresh still works because Supabase session persists
 ✅ Typing the URL manually won’t bypass protection
 
----
-
-## ✅ Optional Variant
-If you want to *choose redirect behaviour*, swap this:
-
-```tsx
-return <Navigate to="/" replace />; // redirect to home page
-```
-
-with:
-
-```tsx
-return <Navigate to="/login" replace />; // redirect to login page
-```
-
 
 ---
 
@@ -150,16 +156,15 @@ return <Navigate to="/login" replace />; // redirect to login page
 
 | Test                                        | Expected Result                  |
 | ------------------------------------------- | -------------------------------- |
-| Logged out user clicks Dashboard            | Redirected to Login ✅            |
-| Logged out user types `/dashboard` manually | Redirected ✅                     |
-| Logged in user refreshes `/dashboard`       | Page loads ✅                     |
-| Logout and then refresh while on dashboard  | Redirects ✅                      |
-| Login again                                 | Dashboard link becomes visible ✅ |
+| Logged out user types `/dashboard` manually | Redirected ✅                   |
+| Logged in user refreshes `/dashboard`       | Page loads ✅                   |
+| Logged out                                  | No Dashboard link  ✅           |
+| Logged in                                   | Dashboard link visible ✅       |
 
 ---
 ## :bricks: Security Note
 
-In **Part 4 – React + Supabase Authentication for Beginners**, we configured **RLS** as soon as we created the table. This action secured our backend database.
+In **Part 4 – React + Supabase Authentication**, we configured **RLS** as soon as we created the table. This action secured our backend database.
 
 In this exercise we secured our front-end with React's **Protected Routes**. We should now have a properly secure application at this point.
 
@@ -172,10 +177,10 @@ In this exercise we secured our front-end with React's **Protected Routes**. We 
 In Part 6 we will be Building the **Admin User Manager UI**
 
 ✔️ Show all users (admin only)
-✔️ Add new users
-✔️ Update existing users
+✔️ Add new users button
+✔️ Update existing users button
 ✔️ Demonstrate Supabase CRUD queries
-✔️ Optional: Modal form for Create/Edit user
+✔️ Modal form for Create/Edit user
 
 ---
 

@@ -44,7 +44,7 @@ The Navbar and Footer stay on screen — only the **content in the middle** chan
 
 ## :toolbox: Preliminary Steps
 
-You will need to scaffold a new React App.
+:exclamation: You will need to scaffold a new React App. We can call it **react-auth-demo**
 
 :information_source: If you are unsure of how to do that, please refer to [this document](../01-React_Setup_and_Component/02-Scaffold_React_App.md) and perform Step. 1 through to Step 6. Then return to continue with **"1. 🔨 Creating the Layout Components"**
 
@@ -73,7 +73,7 @@ src/
 └── main.tsx
 ```
 
-Later, other pages (e.g. About, Contact, etc.) will plug into the layout.
+Later, other pages (e.g. **About**, **Login**, etc.) will plug into the layout.
 
 ---
 
@@ -93,7 +93,7 @@ export default function Navbar() {
             <a href="#about">About</a>
           </li>
           <li>
-            <a href="#contact">Login</a>
+            <a href="#login">Login</a>
           </li>
         </ul>
       </div>
@@ -155,7 +155,8 @@ export default function Layout({ children }: LayoutProps) {
 
 ---
 
-## 5. :page_facing_up: `App.tsx`
+## 5. :page_facing_up: `App.tsx`. 
+Open `App.tsx` and replace with the contents below
 
 ```tsx
 import './App.css'
@@ -318,13 +319,13 @@ You should now have a page that looks like the screenshot below. This may not lo
 | `children` prop   | Lets components wrap other components         |
 | Navbar & Footer   | Static UI elements used site-wide             |
 | Global CSS import | One `styles.css` used across whole app        |
-| Sidebar extension | Shows how layouts can grow over time          |
+
 
 ---
 
 ## :fast_forward: Next Step (Part 2)
 
-We will add **React Router**, so pages like Home, About and Login become real routes:
+We will add **React Router**, so pages like **Home**, **About** and **Login** become real routes:
 
 :white_check_mark: Layout stays
 :white_check_mark: Navbar becomes real navigation (`<NavLink>`)

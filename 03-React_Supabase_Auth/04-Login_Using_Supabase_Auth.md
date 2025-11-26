@@ -33,9 +33,23 @@ This means no passwords are ever stored manually — Supabase handles it all saf
 
 Open a terminal inside your React project and install the Supabase client:
 
+Open a **new terminal** in VS-Code: (Click on the plus button as shown in the screenshot below)
+
+![Basic Layout](../02-React_Layout_and_Routing/assets/New_Terminal.png)
+
+
+In your project folder, run:
+
 ```bash
 npm install @supabase/supabase-js
 ```
+
+When it has completed installing, you can close the terminal with:
+
+```bash
+exit
+```
+
 
 Then create a **`.env`** file in the **:exclamation: root :exclamation:** of your project folder and add placeholders.
 We'll fill these with real values after creating the Supabase project:
@@ -43,6 +57,16 @@ We'll fill these with real values after creating the Supabase project:
 ```bash
 VITE_SUPABASE_URL=https://your-project-url.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+```
+react-auth-demo/    ⬅️ Project Root Folder
+├── node_modules/
+├── public/
+├── src/
+├── .env            ⬅️ .env file location
+├── .gitignore
+├── index.html
 ```
 
 > :brain: **Tip:** Never commit `.env` to GitHub — add it to your `.gitignore`.
@@ -91,10 +115,11 @@ DEBUG=true
 
 ---
 
-## :jigsaw: 2. Create `supabaseClient.ts`
+## :jigsaw: 2. Create `supabaseClient.tsx`
 
 Create a new file:
-:page_facing_up: `src/supabaseClient.ts`
+
+:page_facing_up: `src/supabaseClient.tsx`
 
 Enter the following code:
 
@@ -171,31 +196,11 @@ CREATE TABLE profiles (
   created_at timestamptz DEFAULT now()
 );
 ```
+:information_source: You should see **`Success. No rows returned`** if the command succeeds.
 
 ---
 
-## :office_worker: 5. Create an Admin User
-
-1. In **Authentication → Users → Add user**, click **Create new user**.
-
-   * Email: `admin@admin.com`
-   * Password: `password123`
-   * Tick :white_check_mark: *Auto Confirm User*
-
-2. Copy that user’s **UUID** (from the Users list).
-
-3. In **SQL Editor**, insert the admin’s profile:
-
-```sql
-INSERT INTO profiles (id, first_name, last_name, email, is_admin)
-VALUES ('your-copied-user-id', 'App', 'Admin', 'admin@admin.com', true);
-```
-
-:white_check_mark: Now you have one admin account for testing.
-
----
-
-## :toolbox: 6. Enable Row Level Security (RLS) and Add Policies
+## :toolbox: 5. Enable Row Level Security (RLS) and Add Policies
 
 ### :brain: What is RLS?
 
@@ -231,6 +236,10 @@ Even if users can't see a page in React, they can still:
 
 ### :compass: Step-by-Step in Supabase Dashboard
 
+There are two ways you can do this. Via the **GUI** or by running an SQL command in **SQL Editor**. 
+
+### Method 1: Using the GUI:
+
 1. Go to **Table Editor → profiles**
 2. Click on **RLS disabled** button
 3. Click **Enable RLS for this table**
@@ -246,92 +255,94 @@ Then repeat the steps below to create the four policies.
 
 ---
 
-### :bricks: Policy 1 – Users can read their own profile
+### :bricks: Policy 1 – Allow users to view their own profile
 
-* Click **Create policy** button
-* Enter Policy Name as: ```Users can read their own profile```
+Click **Create policy** button
+* Policy Name as: ```Allow users to view their own profile```
+* Table: `public.profiles`
+* Policy Behavior: `Permissive`
 * Click **SELECT** under **Policy Command**
-* Enter ```auth.uid() = id``` into the generated SQL statement.
+* Target Roles: `Defaults to all(public) roles if none selected`
+* Enter using: ```(auth.uid() = id)``` into the generated SQL statement.
 
 :information_source: Your full statement should look like below:
-```SQL
-create policy "Users can read their own profile"
+```sql
+create policy "Allow users to view their own profile"
 on "public"."profiles"
 as PERMISSIVE
 for SELECT
 to public
 using (
-auth.uid() = id
+  (auth.uid() = id)
 );
 ```
-* Click **Save policy**
+Click **Save policy**
 
-✅ Allows logged-in users to read THEIR OWN row only
-✅ They cannot read other users’ data
+✅ Allows logged-in users to **read** THEIR OWN row only
+✅ They cannot **read** other users’ data
 
 ---
 
-### :bricks: Policy 2 – Users can update their own profile (except admin flag)
+### :bricks: Policy 2 – Allow users to update their own profile
 
-* Click **Create policy** button
-* Enter Policy Name as: ```Users can update their own profile```
+Click **Create policy** button
+* Enter Policy Name as: ```Allow users to update their own profile```
+* Table: `public.profiles`
+* Policy Behavior: `Permissive`
 * Click **UPDATE** under **Policy Command**
-* Enter ```auth.uid() = id```
-* Enter ```auth.uid() = id AND is_admin = is_admin```
+* Target Roles: `Defaults to all(public) roles if none selected`
+* Enter using:```(auth.uid() = id)```
+* Enter with check: ```(auth.uid() = id)```
 
 :information_source: Your full statement should look like below:
 ```sql
-create policy "Users can update their own profile"
+create policy "Allow users to update their own profile"
 on "public"."profiles"
 as PERMISSIVE
 for UPDATE
 to public
 using (
-auth.uid() = id
+  (auth.uid() = id)
 ) with check (
-auth.uid() = id AND is_admin = is_admin
+  (auth.uid() = id)
 );
 ```
-* Click **Save policy**
+Click **Save policy**
 
-➡ Lets normal users update their own name/email,
-but prevents them from changing `is_admin`.
+➡ Lets users **update** THEIR OWN row only
+✅ They cannot **update** other users’ data
 
 ---
 
-### :bricks: Policy 3 – Admins can read, insert and update all profiles
+### :bricks: Policy 3 – Allow admins full access
 
-* Click **Create policy** button
-* Enter Policy Name as: ```Admins can read and write all profiles```
+Click **Create policy** button
+* Enter Policy Name as: ```Allow admins full access```
+* Table: `public.profiles`
+* Policy Behavior: `Permissive`
 * Click **ALL** under **Policy Command**
-* Enter 
-```sql
-EXISTS (
-    SELECT 1 FROM profiles AS p
-    WHERE p.id = auth.uid() AND p.is_admin = true
-  )
-```
-* Un-Tick ***Use check expression***
+* Target Roles: `Defaults to all(public) roles if none selected`
+* Enter using: ```(((auth.jwt() ->> 'is_admin'::text))::boolean = true)```
+* Enter with check: ```(((auth.jwt() ->> 'is_admin'::text))::boolean = true)```
+
 
 :information_source: Your full statement should look like below:
 ```sql
-create policy "Admins can read and write all profiles"
+create policy "Allow admins full access"
 on "public"."profiles"
 as PERMISSIVE
 for ALL
 to public
 using (
-EXISTS (
-    SELECT 1 FROM profiles AS p
-    WHERE p.id = auth.uid() AND p.is_admin = true
-  )
+  (((auth.jwt() ->> 'is_admin'::text))::boolean = true)
+) with check (
+  (((auth.jwt() ->> 'is_admin'::text))::boolean = true)
 );
 
 ```
-* Click **Save policy**
+Click **Save policy**
 
-:white_check_mark: If the logged-in user’s own record has `is_admin = true`,
-they can select, insert and update any row.
+:white_check_mark: If the logged-in user’s own record has `is_admin = true`, they can select, insert and update any row. You may get a warning
 
 ---
 
@@ -339,6 +350,67 @@ they can select, insert and update any row.
 
 Do **not** create any DELETE policy.
 When RLS is enabled, lack of a delete policy means deletes are automatically blocked. :white_check_mark:
+
+---
+
+### Method 2: Using the SQL Editor:
+If you did not wish to click around the interface or have a problem with the resultant RLS Policies, you can copy and paste the SQL command below into SQL Editor to create the 3 policies at once. You may get a **"Destructive Query Warning"**. 
+Click **Run this query**.
+
+```sql
+
+-- DROP existing policies (for safety)
+DROP POLICY IF EXISTS "Allow users to view their own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Allow users to update their own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Allow admins full access" ON public.profiles;
+
+-- Ensure RLS is enabled
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policy #1: Users can view their own profile
+CREATE POLICY "Allow users to view their own profile"
+ON public.profiles
+AS PERMISSIVE
+FOR SELECT
+TO public
+USING (
+  auth.uid() = id
+);
+
+-- Policy #2: Users can update their own profile (but only their row)
+CREATE POLICY "Allow users to update their own profile"
+ON public.profiles
+AS PERMISSIVE
+FOR UPDATE
+TO public
+USING (
+  auth.uid() = id
+)
+WITH CHECK (
+  auth.uid() = id
+);
+
+-- Policy #3: Admins full access (select, insert, update, delete) if their JWT has is_admin = true
+CREATE POLICY "Allow admins full access"
+ON public.profiles
+AS PERMISSIVE
+FOR ALL
+TO public
+USING (
+  (auth.jwt() ->> 'is_admin')::boolean = true
+)
+WITH CHECK (
+  (auth.jwt() ->> 'is_admin')::boolean = true
+);
+
+
+```
+#### ✅ Explanation of each part
+
+* `auth.uid() = id`: ensures the logged-in user’s UID matches the `id` column of the row in `profiles` table.
+* `(auth.jwt() ->> 'is_admin')::boolean = true`: reads the `is_admin` claim from the user’s JWT token, casts it to boolean, and checks if it’s `true`.
+* `FOR ALL`: covers `SELECT`, `INSERT`, `UPDATE`, `DELETE`.
+* `WITH CHECK`: ensures that when rows are inserted/updated by an admin, the action is only permitted if `is_admin = true`.
 
 ---
 
@@ -356,8 +428,187 @@ When RLS is enabled, lack of a delete policy means deletes are automatically blo
 
 ---
 
+## :office_worker: 6. Create an Admin and a User Account
+### a. Create an Admin Account
 
-## :key: 7. Update `Login.tsx` to Use Supabase Auth
+1. In **Authentication → Users → Add user**, click **Create new user**.
+
+   * Email: `admin@domain.local`
+   * Password: `password`
+   * Tick :white_check_mark: *Auto Confirm User*
+
+2. Copy that user’s **UID** (from the Users list).
+
+3. In **SQL Editor**, insert the admin’s profile:
+
+```sql
+INSERT INTO profiles (id, first_name, last_name, email, is_admin)
+VALUES ('your-copied-user-id', 'App', 'Admin', 'admin@domain.local', true);
+```
+
+
+
+### b. Create an User Account
+
+1. In **Authentication → Users → Add user**, click **Create new user**.
+
+   * Email: `user01@domain.local`
+   * Password: `password`
+   * Tick :white_check_mark: *Auto Confirm User*
+
+2. Copy that user’s **UID** (from the Users list).
+
+3. In **SQL Editor**, insert the user’s profile:
+
+```sql
+INSERT INTO profiles (id, first_name, last_name, email, is_admin)
+VALUES ('your-copied-user-id', 'App', 'User01', 'user01@domain.local', false);
+```
+
+:white_check_mark: Now you have **one admin** and **one user** account for testing.
+
+---
+
+## 7. Create a Custom Access Token Hook Security Definer that adds is_admin
+
+**Open Supabase → SQL Editor → New Query** and paste the function below. This function reads `public.profiles` for the logging-in user and adds an `is_admin` boolean into the token claims.
+
+> Note: this code runs when a token is issued — it’s safe to query `profiles` here.
+Paste and run as a single query as **postgres role**.
+
+```sql
+
+create or replace function public.custom_access_token_hook(event jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  claims jsonb := coalesce(event->'claims', '{}'::jsonb);
+  user_id uuid := (event->>'user_id')::uuid;
+  is_admin_value boolean := false;
+begin
+  -- Safely fetch the is_admin flag from profiles
+  select p.is_admin into is_admin_value
+  from public.profiles p
+  where p.id = user_id;
+
+  -- Insert or overwrite is_admin in JWT claims
+  claims := jsonb_set(claims, '{is_admin}', to_jsonb(is_admin_value), true);
+
+  -- Return event with modified claims
+  return jsonb_set(event, '{claims}', claims);
+end;
+$$;
+
+```
+
+**What this does**
+
+* Reads the logged-in user id (`event->'user'->>'id'`), looks up `profiles.is_admin`, and adds `"is_admin": true|false` into the issued token’s claims.
+* Because the hook runs as part of token issuance, the DB can check `(auth.jwt() ->> 'is_admin')::boolean` in RLS without recursive queries. (See Supabase documentation on custom access token hook).
+
+---
+
+### 🧰 Next: Make sure the hook can read the profiles table
+
+Because this hook runs as the Auth service (not as a normal user), you must grant it permission to read that table.
+
+**SQL Editor → New Query** then paste and run the function below and run as **postgres role**:
+
+```sql
+grant select on public.profiles to postgres;
+grant select on public.profiles to service_role;
+```
+
+Then restart your project from the Dashboard → Settings → General → Restart project
+
+---
+
+## 8. Configure Supabase to call the Custom Access Token Hook Security Definer when issuing tokens
+
+1. Open your Supabase project → left menu → **Authentication**.
+2. Click on **Auth Hooks** 
+3. Click **Add hooks** or **Add a new hook**
+4. Select **Customize Access Toekn (JWT) Claims hook**
+4. In that UI, under **Postgres function** select the function we created: `custom_access_token_hook`
+5. Once selected you will see the statements box auto-populate with the following statements:
+
+```sql
+-- Grant access to function to supabase_auth_admin
+grant execute on function public.custom_access_token_hook to supabase_auth_admin;
+
+-- Grant access to schema to supabase_auth_admin
+grant usage on schema public to supabase_auth_admin;
+
+-- Revoke function permissions from authenticated, anon and public
+revoke execute on function public.custom_access_token_hook from authenticated, anon, public;
+
+```
+
+7. click **Create hook**
+
+---
+
+<!--
+
+Once the JWT claim is working, the RLS policies (using `(auth.jwt()->>'is_admin')::boolean`) will correctly to allow the admin to see all users:
+
+```sql
+-- 1️⃣ Allow users to view their own profile or all if admin
+create policy "Allow users to read their own or all if admin"
+on public.profiles for select
+to authenticated
+using (
+  auth.uid() = id
+  or coalesce((auth.jwt()->>'is_admin')::boolean, false)
+);
+
+-- 2️⃣ Allow users to update their own or all if admin
+create policy "Allow users to update their own or all if admin"
+on public.profiles for update
+to authenticated
+using (
+  auth.uid() = id
+  or coalesce((auth.jwt()->>'is_admin')::boolean, false)
+);
+
+-- 3️⃣ Allow admins to insert (non-admins cannot)
+create policy "Allow admins to insert profiles"
+on public.profiles for insert
+to authenticated
+with check (
+  coalesce((auth.jwt()->>'is_admin')::boolean, false)
+);
+```
+
+-->
+
+
+
+
+## 9. 🔍 Quick sanity check
+
+To confirm everything is working end-to-end, in SQL Editor **impersonate admin** and run these SQL tests:
+
+```sql
+-- Should show "is_admin": true for admin and "is_admin" : false if user.
+select (auth.jwt()->>'is_admin')::boolean as is_admin;
+
+-- Should return multiple rows for admin and own row for user.
+select id, email, is_admin from profiles;
+
+-- If you wsh to generate the full JWT output, run the following, then right click the returned row and choose View Cell Content.
+select auth.jwt();
+
+```
+
+It is recommended to **impersonate user** and re-run the SQL tests to ensure there are no unintended results.
+
+---
+
+## :key: 10. Update `Login.tsx` to Use Supabase Auth
 
 Replace your existing `Login.tsx` with the following code:
 
@@ -388,6 +639,9 @@ export default function Login() {
       setError(error.message);
       return;
     }
+
+    // Using the session/user info to prevent a warning regarding ''data' is declared but its value is never read.' for now 
+    console.log("Logged in user:", data.user);
 
     // Successful login → redirect to dashboard
     navigate("/dashboard");
@@ -441,7 +695,7 @@ export default function Login() {
 
 ---
 
-## :compass: 8. Add the Dashboard Page
+## :compass: 11. Add the Dashboard Page
 
 Create `src/pages/Dashboard.tsx`
 
@@ -461,7 +715,7 @@ export default function Dashboard() {
 
 ---
 
-## :gear: 9. Update `App.tsx`
+## :gear: 12. Update `App.tsx`
 
 Add the new /dashboard route to your `App.tsx`:
 
@@ -494,17 +748,17 @@ export default function App() {
 
 ---
 
-## :test_tube: 10. Test Checklist
+## :test_tube: 13. Test Checklist
 
 | Test | Expected Result                                                       |
 | ---- | --------------------------------------------------------------------- |
 | 1    | App runs without errors                                               |
 | 2    | Navigate to `/login`                                                  |
 | 3    | Enter wrong email/password → red error appears                        |
-| 4    | Enter `admin@admin.com` + `password123` → redirected to Dashboard     |
+| 4    | Enter `admin@domain.local` + `password` → redirected to Dashboard     |
 | 5    | Navbar + Footer remain visible                                        |
 | 6    | Refresh dashboard page — stays logged in (Supabase remembers session) |
-| 7    | Close browser and Navigate to `/dahsboard` — stays logged in!!!       |
+| 7    | Close and re-open browser. Navigate to `/dahsboard` > stays logged in!!!|
 
 :white_check_mark: You now have a Supabase authentication working front-end to back-end.
 
