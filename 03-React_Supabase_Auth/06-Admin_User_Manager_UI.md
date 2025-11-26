@@ -60,51 +60,69 @@ So this part = **front-end access control + admin UI creation**.
 
 ```tsx
 // src/pages/UserManager.tsx
+
+// Import React hooks: useEffect (run code when component loads) and useState (store data in memory)
 import { useEffect, useState } from "react";
+// Import the Supabase client (used to talk to your database)
 import { supabase } from "../supabaseClient";
 
+// Define the shape of a "Profile" object so TypeScript knows what fields exist
 type Profile = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  is_admin: boolean;
+  id: string;          // unique identifier for the user
+  first_name: string;  // user's first name
+  last_name: string;   // user's last name
+  email: string;       // user's email address
+  is_admin: boolean;   // whether the user is an admin or not
 };
 
+// This is the main React component for managing users
 export default function UserManager() {
+  // State variable to hold the list of users (starts as an empty array)
   const [users, setUsers] = useState<Profile[]>([]);
+  // State variable to track whether data is still loading (starts as true)
   const [loading, setLoading] = useState(true);
 
+  // useEffect runs once when the component first loads (because of the empty [] dependency array)
   useEffect(() => {
+    // Define an async function to fetch users from the database
     const fetchUsers = async () => {
+      // Ask Supabase for all rows from the "profiles" table, ordered by last_name
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .order("last_name", { ascending: true });
 
+      // If there was an error, log it to the console
       if (error) {
         console.error("Error loading users:", error);
       } else {
+        // Otherwise, save the data into our "users" state
         setUsers(data as Profile[]);
       }
 
+      // Mark loading as finished
       setLoading(false);
     };
 
+    // Call the function to actually fetch the users
     fetchUsers();
-  }, []);
+  }, []); // Empty array means this runs only once when the component mounts
 
+  // While loading is true, show a simple message instead of the table
   if (loading) return <p>Loading users...</p>;
 
+  // Once loading is done, render the user management interface
   return (
     <section>
       <h1>User Management</h1>
       <p>Only visible to admin users.</p>
 
+      {/* Button to create a new user (not yet wired up) */}
       <button style={{ marginBottom: "1rem" }}>
         ➕ Create New User
       </button>
 
+      {/* Table to display all users */}
       <table border={1} cellPadding={8}>
         <thead>
           <tr>
@@ -116,11 +134,16 @@ export default function UserManager() {
         </thead>
 
         <tbody>
+          {/* Loop through each user and render a table row */}
           {users.map((user) => (
             <tr key={user.id}>
+              {/* Show first + last name */}
               <td>{user.first_name} {user.last_name}</td>
+              {/* Show email */}
               <td>{user.email}</td>
+              {/* Show whether they are admin (✅ Yes / ❌ No) */}
               <td>{user.is_admin ? "✅ Yes" : "❌ No"}</td>
+              {/* Placeholder Edit button */}
               <td>
                 <button>Edit</button>
               </td>
@@ -131,6 +154,7 @@ export default function UserManager() {
     </section>
   );
 }
+
 ```
 
 ✅ Works only for admins
@@ -147,57 +171,75 @@ export default function UserManager() {
 :memo: `src/hooks/useUserProfile.tsx`
 
 ```ts
+
+// Import React hooks: useEffect (run code when component loads) and useState (store data in memory)
 import { useEffect, useState } from "react";
+// Import the Supabase client (used to talk to your database and authentication system)
 import { supabase } from "../supabaseClient";
 
+// Define the shape of a "UserProfile" object so TypeScript knows what fields exist
 export type UserProfile = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  is_admin: boolean;
+  id: string;          // unique identifier for the user
+  first_name: string;  // user's first name
+  last_name: string;   // user's last name
+  email: string;       // user's email address
+  is_admin: boolean;   // whether the user is an admin or not
 };
 
+// This is a custom React hook that loads the current user's profile from Supabase
 export function useUserProfile() {
+  // State variable to hold the user's profile (starts as null because we don't know yet)
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  // State variable to track whether we are still loading data (starts as true)
   const [loading, setLoading] = useState(true);
 
+  // useEffect runs once when the component first loads (because of the empty [] dependency array)
   useEffect(() => {
-    // Fetch profile when component mounts or user logs in
+    // Define an async function to fetch the profile
     async function loadProfile() {
+      // Ask Supabase who the currently logged-in user is
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
+      // If no user is logged in, clear profile and stop loading
       if (!user) {
         setProfile(null);
         setLoading(false);
-        return;
+        return; // exit early
       }
 
-      // Fetch matching profile row
+      // If a user exists, fetch their matching row from the "profiles" table
       const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+        .from("profiles")     // look in the "profiles" table
+        .select("*")          // select all columns
+        .eq("id", user.id)    // only rows where "id" matches the logged-in user's id
+        .single();            // expect exactly one row back
 
+      // If no error and we got data, save it into state
       if (!error && data) {
         setProfile(data as UserProfile);
-        // Helpful for debugging - shows live profile object in console
+        // Helpful for debugging: print the profile object in the browser console
         console.log("Loaded profile:", data);
       } else {
+        // If there was an error, log it to the console
         console.error("Error loading profile:", error?.message);
       }
 
+      // Mark loading as finished
       setLoading(false);
     }
 
+    // Call the function to actually load the profile
     loadProfile();
-  }, []);
+  }, []); // Empty array means this runs only once when the component mounts
 
-  // If user updates their profile later, they can re-run loadProfile() manually.
+  // Note: If the user updates their profile later, you could re-run loadProfile() manually.
 
+  // Return an object with:
+  // - profile: the user's profile data (or null if not logged in)
+  // - loading: whether we're still fetching data
+  // - isAdmin: a shortcut boolean to check if the user is an admin
   return { profile, loading, isAdmin: profile?.is_admin === true };
 }
 
@@ -227,67 +269,92 @@ We’ll creatie a **global `UserContext`** that loads the profile *once* and sha
 ### 🧱 Step 3. Create `/src/context/UserContext.tsx`
 
 ```tsx
-// src/context/UserContext.tsx
+
+// Import React tools:
+// - createContext: lets us make a "global" data store
+// - useContext: lets components read from that store
+// - useEffect: run code when component loads or when something changes
+// - useState: store data in memory
 import { createContext, useContext, useEffect, useState } from "react";
+// Import Supabase client (used for authentication and database queries)
 import { supabase } from "../supabaseClient";
+// Import the UserProfile type definition so TypeScript knows the shape of profile data
 import type { UserProfile } from "../hooks/useUserProfile";
 
+// Define the shape of the data our context will provide
 type UserContextType = {
-  profile: UserProfile | null;
-  loading: boolean;
-  refreshProfile: () => Promise<void>;
+  profile: UserProfile | null;       // the logged-in user's profile (or null if not logged in)
+  loading: boolean;                  // whether we are still fetching data
+  refreshProfile: () => Promise<void>; // function to reload the profile manually
 };
 
+// Create the actual context object with default values
+// These defaults are used only if a component tries to read the context
+// without being wrapped in <UserProvider>
 const UserContext = createContext<UserContextType>({
   profile: null,
   loading: true,
-  refreshProfile: async () => {},
+  refreshProfile: async () => {}, // empty function placeholder
 });
 
+// This component wraps around children and provides user data to them
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  // State variables to hold the profile and loading status
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Function to load the current user's profile from Supabase
   async function loadProfile() {
-    setLoading(true);
+    setLoading(true); // show loading while fetching
+
+    // Ask Supabase who the current logged-in user is
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
+    // If no user is logged in, clear profile and stop loading
     if (!user) {
       setProfile(null);
       setLoading(false);
       return;
     }
 
+    // If a user exists, fetch their profile row from the "profiles" table
     const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+      .from("profiles")     // look in "profiles" table
+      .select("*")          // select all columns
+      .eq("id", user.id)    // only the row where id matches the logged-in user
+      .single();            // expect exactly one row
 
+    // If successful, save the profile into state
     if (!error && data) {
       setProfile(data as UserProfile);
     } else {
+      // Otherwise log the error for debugging
       console.error("Error loading profile:", error?.message);
     }
 
-    setLoading(false);
+    setLoading(false); // done loading
   }
 
+  // useEffect runs once when the provider mounts
   useEffect(() => {
+    // Load profile immediately
     loadProfile();
 
-    // Re-run when auth state changes
+    // Also listen for authentication state changes (login/logout)
+    // Whenever auth changes, reload the profile
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
       loadProfile();
     });
 
+    // Cleanup: unsubscribe from the listener when component unmounts
     return () => {
       listener.subscription.unsubscribe();
     };
   }, []);
 
+  // Provide the profile, loading state, and refresh function to all children
   return (
     <UserContext.Provider value={{ profile, loading, refreshProfile: loadProfile }}>
       {children}
@@ -295,9 +362,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Custom hook to easily access the UserContext in other components
 export function useUser() {
   return useContext(UserContext);
 }
+
 ```
 
 ---
@@ -307,34 +376,54 @@ export function useUser() {
 Now it can use the **shared** user context (no separate fetch needed):
 
 ```tsx
-import React from "react";
-import { Navigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
 
+// This component prevents users from accessing certain pages unless they are logged in.
+// It can also restrict access to certain pages only for admin users.
+
+import React from "react"; 
+// Import React (needed for JSX, though in newer versions it's optional)
+
+import { Navigate } from "react-router-dom"; 
+// Navigate lets us redirect users to another page (e.g., login or dashboard)
+
+import { useUser } from "../context/UserContext"; 
+// Custom hook that gives us the current user's profile and loading state
+// Instead of checking Supabase directly here, we rely on context to manage auth state
+
+// Define the props that this component accepts
 type ProtectedRouteProps = {
-  children: React.ReactElement;
-  adminOnly?: boolean;
+  children: React.ReactElement; // The page/component we want to protect
+  adminOnly?: boolean; // Optional flag: if true, only admin users can access
 };
 
+// Main component definition
 export default function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
+  // Get the current user profile and loading state from context
   const { profile, loading } = useUser();
 
+  // While checking if the user is logged in, show a loading message
+  // This prevents flickering or showing protected content before we know the auth state
   if (loading) {
     return <p style={{ textAlign: "center", padding: "2rem" }}>Loading...</p>;
   }
 
-  // Not logged in
+  // If the user is NOT logged in, redirect them to the login page
   if (!profile) {
     return <Navigate to="/login" replace />;
+    // "replace" means we don't keep the current page in browser history
+    // so the user can't click "back" and return to the protected page
   }
 
-  // Admin-only route, but user is not admin
+  // If this route is admin-only, but the user is not an admin, redirect them
   if (adminOnly && !profile.is_admin) {
     return <Navigate to="/dashboard" replace />;
+    // This ensures non-admin users can't access admin-only pages
   }
 
+  // If the user is logged in (and admin if required), show the protected page
   return children;
 }
+
 ```
 
 ---
@@ -342,46 +431,81 @@ export default function ProtectedRoute({ children, adminOnly = false }: Protecte
 ### 🧱 Step 5. Update `Navbar.tsx` to use same context
 
 ```tsx
+
+// Import navigation tools from react-router-dom
+// NavLink = clickable navigation links
+// useNavigate = lets us redirect users programmatically
 import { NavLink, useNavigate } from "react-router-dom";
+
+// Import supabase client (handles authentication like login/logout)
 import { supabase } from "../supabaseClient";
+
+// Import custom UserContext hook
+// useUser = gives us access to the current user's profile info (shared globally)
 import { useUser } from "../context/UserContext";
 
+// Define the Navbar component
 export default function Navbar() {
+  // Get the user's profile from context
+  // profile = object with user info (like name, role, is_admin)
   const { profile } = useUser();
+
+  // Create a navigate function to redirect users
   const navigate = useNavigate();
 
+  // Function to log out the user
   const handleLogout = async () => {
+    // Ask supabase to sign out (end session)
     await supabase.auth.signOut();
+    // Redirect user to login page after logout
     navigate("/login");
   };
 
+  // Check if user is logged in
+  // !!profile = true if profile exists, false if null/undefined
   const isLoggedIn = !!profile;
 
+  // JSX returned by the component (what shows on screen)
   return (
-    <nav className="navbar">
-      <div className="container">
+    <nav className="navbar"> {/* Navigation bar wrapper */}
+      <div className="container"> {/* Centers content */}
+        
+        {/* Logo that links to home page */}
         <NavLink to="/" className="logo">MyWebsite</NavLink>
 
+        {/* Navigation links list */}
         <ul className="nav-links">
+          
+          {/* Always show Home and About links */}
           <li><NavLink to="/">Home</NavLink></li>
           <li><NavLink to="/about">About</NavLink></li>
 
+          {/* If user IS logged in → show Dashboard link */}
           {isLoggedIn && <li><NavLink to="/dashboard">Dashboard</NavLink></li>}
 
+          {/* If user IS logged in AND is an admin → show User Manager link */}
           {isLoggedIn && profile?.is_admin && (
             <li><NavLink to="/admin/users">User Manager</NavLink></li>
           )}
 
+          {/* If user is NOT logged in → show Login link */}
           {!isLoggedIn && <li><NavLink to="/login">Login</NavLink></li>}
 
+          {/* If user IS logged in → show Logout button */}
           {isLoggedIn && (
-            <li><button className="logout-btn" onClick={handleLogout}>Logout</button></li>
+            <li>
+              {/* Logout button calls handleLogout when clicked */}
+              <button className="logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </li>
           )}
         </ul>
       </div>
     </nav>
   );
 }
+
 ```
 
 ---
@@ -391,26 +515,54 @@ The UserProvider wraps our app in App.tsx and then useUser() context is availabl
 Lets wrap our entire app inside `UserProvider`.
 
 ```tsx
+
+// Import tools from React Router:
+// - BrowserRouter: wraps the whole app to enable routing
+// - Routes: container for all route definitions
+// - Route: defines a single route (URL path → component)
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Import global CSS styles for the app
 import './App.css'
+
+// Import the Layout component (shared page structure like header/footer)
 import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Login from "./pages/Login";
+
+// Import individual page components
+import Home from "./pages/Home";         // Home page
+import About from "./pages/About";       // About page
+import Login from "./pages/Login";       // Login page
+
+// Import ProtectedRoute (wrapper that checks if user is logged in or admin)
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// Import Dashboard page (only accessible when logged in)
 import Dashboard from "./pages/Dashboard";
+
+// Import UserManager page (only accessible to admin users)
 import UserManager from "./pages/UserManager";
+
+// Import UserProvider (context provider that shares user info across the app)
 import { UserProvider } from "./context/UserContext";
 
+// Main App component — this is the root of your React application
 export default function App() {
   return (
+    // BrowserRouter enables navigation between pages using URLs
     <BrowserRouter>
+      {/* UserProvider makes user data (profile, loading state, etc.)
+          available to all components inside it */}
       <UserProvider>
+        {/* Layout wraps all pages with common UI (like header, footer, sidebar) */}
         <Layout>
+          {/* Routes contains all the different paths (URLs) in the app */}
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Login />} />
+            {/* Public routes (anyone can access) */}
+            <Route path="/" element={<Home />} />       {/* Home page at "/" */}
+            <Route path="/about" element={<About />} /> {/* About page at "/about" */}
+            <Route path="/login" element={<Login />} /> {/* Login page at "/login" */}
+
+            {/* Protected route — only logged-in users can see Dashboard */}
             <Route
               path="/dashboard"
               element={
@@ -419,6 +571,8 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Admin-only protected route — only admin users can see UserManager */}
             <Route
               path="/admin/users"
               element={
@@ -433,6 +587,7 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
 ```
 
 ---

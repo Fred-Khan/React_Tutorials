@@ -613,61 +613,95 @@ It is recommended to **impersonate user** and re-run the SQL tests to ensure the
 Replace your existing `Login.tsx` with the following code:
 
 ```tsx
+// Import the useState hook from React.
+// useState lets this component store and update values (email, password, and error messages).
 import { useState } from "react";
+
+// Import the Supabase client we set up earlier.
+// This gives us access to Supabase authentication functions.
 import { supabase } from "../supabaseClient";
+
+// Import useNavigate from React Router.
+// This hook lets us programmatically redirect the user to another page after login.
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  // React state for controlled inputs
+  // Declare state variables for form fields.
+  // "email" and "password" will always hold the latest text typed by the user.
+  // setEmail and setPassword are functions used to update those values.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // New state variable for error messages.
+  // If login fails, "error" will hold the error message string.
+  // setError is used to update that value.
   const [error, setError] = useState<string | null>(null);
+
+  // Create a navigate function using React Router.
+  // We’ll use this to redirect the user to the dashboard after successful login.
   const navigate = useNavigate();
 
+  // This function is triggered when the user presses the "Sign In" button
+  // or submits the form by pressing Enter.
   async function handleSubmit(e: React.FormEvent) {
+    // Prevent the browser from refreshing the page (default form behaviour).
+    // In React apps, we ALWAYS prevent full page reload.
     e.preventDefault();
+
+    // Clear any previous error message before trying again.
     setError(null);
 
-    // Try to log in using Supabase Auth
+    // Try to log in using Supabase Auth.
+    // signInWithPassword takes the email and password from state.
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
+    // If Supabase returns an error (wrong email or password), update error state.
     if (error) {
-      // Wrong email or password
-      setError(error.message);
-      return;
+      setError(error.message); // Show the error message in the UI.
+      return; // Stop running the rest of the function.
     }
 
-    // Using the session/user info to prevent a warning regarding ''data' is declared but its value is never read.' for now 
+    // If login succeeds, Supabase gives us user data.
+    // In case we need to debug, we log it to the console.
     console.log("Logged in user:", data.user);
 
-    // Successful login → redirect to dashboard
+    // Successful login → redirect to dashboard page.
     navigate("/dashboard");
   }
 
   return (
+    // This section gives structure for layout/styling.
+    // The CSS class "login-container" centres the login card on the page.
     <section className="login-container">
       <div className="login-card">
         <h2>Sign In</h2>
 
+        {/* 
+          The "onSubmit" attribute tells React what to do when the form is submitted.
+          In this case, it calls our handleSubmit() function above.
+        */}
         <form onSubmit={handleSubmit} className="login-form">
+          
+          {/* EMAIL FIELD */}
           <label>
             Email
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="email"                 // built-in browser validation for email format
+              value={email}                // controlled input (value stored in state)
+              onChange={(e) => setEmail(e.target.value)} // updates state as user types
               placeholder="Enter your email"
-              required
+              required                     // browser will not allow empty submission
             />
           </label>
 
+          {/* PASSWORD FIELD */}
           <label>
             Password
             <input
-              type="password"
+              type="password"              // hides the text while typing
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
@@ -675,13 +709,17 @@ export default function Login() {
             />
           </label>
 
+          {/* SUBMIT BUTTON */}
           <button type="submit" className="btn-primary">
             Sign In
           </button>
         </form>
 
+        {/* ERROR MESSAGE */}
+        {/* If "error" has a value, show it in red text below the form. */}
         {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
 
+        {/* This link does nothing yet, but will connect later to Supabase reset-password */}
         <a href="#" className="forgot-link">Forgot your password?</a>
       </div>
     </section>
