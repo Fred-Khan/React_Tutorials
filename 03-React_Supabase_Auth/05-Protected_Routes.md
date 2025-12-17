@@ -1,28 +1,31 @@
 
-## 🔐 Part 5 – Protected Routes + Supabase Row Level Security (RLS)
+## :closed_lock_with_key: Part 5 – Protected Routes + Supabase Row Level Security (RLS)
 
-### 🎯 Learning Goals
+### :dart: Learning Goals
 
-✅ Understand what **Protected Routes** are in React
-✅ Prevent access to pages unless the user is logged in
-✅ JWT, sessions, and route protection
-✅ Create a `<ProtectedRoute>` wrapper component
-✅ Apply it to the `/dashboard` (logged-in users only)
+:white_check_mark: Understand what **Protected Routes** are in React <br/>
+:white_check_mark: Prevent access to pages unless the user is logged in <br/>
+:white_check_mark: JWT, sessions, and route protection <br/>
+:white_check_mark: Create a `<ProtectedRoute>` wrapper component <br/>
+:white_check_mark: Apply it to the `/dashboard` (logged-in users only) <br/>
 
 ---
-## 🧠 JWT Brief Explaination
+## :brain: JWT Brief Explaination
 
 **JWT (JSON Web Token)** is like a digital "ID card" the server issues **after** you log in.
 It’s stored locally and automatically sent with every request to prove identity.
+More information on JSON Web Token:
+- https://dev.to/gurnav224/jwt-made-easy-a-beginners-guide-to-authentication-1kp6
+- https://jwt.app/blog/what-is-jwt/
 
-## 🧠 What Are Protected Routes?
+## :brain: What Are Protected Routes?
 
 A **Protected Route**:
 
-* ✅ Lets the user in *only if authenticated*
-* ❌ Redirects the user if they try to visit the page manually
-* ✅ Works even if the user modifies the URL
-* ✅ Is required because hiding links is **NOT** security
+* :white_check_mark: Lets the user in *only if authenticated* 
+* :x: Redirects the user if they try to visit the page manually
+* :white_check_mark: Works even if the user modifies the URL
+* :white_check_mark: Is required because hiding links is **NOT** security
 
 Example of unsafe behaviour (current state):
 
@@ -36,14 +39,14 @@ What we want:
 User is logged out → types http://localhost:5173/dashboard → redirected ➜ http://localhost:5173/login ✅
 ```
 
-✅ Protected Routes = **front-end access security**
-✅ Combined with Supabase RLS from [Part 4 – React + Supabase Authentication](./04-Login_Using_Supabase_Auth.md) = **full-stack protection**
+:white_check_mark: Protected Routes = **front-end access security** <br/>
+:white_check_mark: Combined with Supabase RLS from [Part 4 – React + Supabase Authentication](./04-Login_Using_Supabase_Auth.md) = **full-stack protection**
 
 ---
 
-## 🛠 Step 1 — Create `ProtectedRoute.tsx` in `components` folder
+## :hammer_and_wrench: 1. Create `ProtectedRoute.tsx` in `components` folder
 
-📌 This component **wraps any route** and checks Supabase session before allowing access. It acts like a security guard. When you try to visit a protected page, it checks with Supabase to see if you’re logged in.
+:pushpin: This component **wraps any route** and checks Supabase session before allowing access. It acts like a security guard. When you try to visit a protected page, it checks with Supabase to see if you’re logged in.
 
 * If you are, it lets you in.
 * If you’re not, it sends you to the login page.
@@ -100,7 +103,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 
 ---
 
-### 🧠 Breakdown
+### :brain: Breakdown
 
 | Code                       | What It Means                                            |
 | -------------------------- | -------------------------------------------------------- |
@@ -112,7 +115,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 
 ---
 
-## ✅ Optional Variant
+## :white_check_mark: Optional Variant
 If you want to *change redirect behaviour*, swap this:
 
 ```tsx
@@ -127,7 +130,7 @@ return <Navigate to="/login" replace />; // redirect to login page
 
 ---
 
-## 🛠 Step 2 — Apply Protected Route in `App.tsx`
+## :hammer_and_wrench: 2. Apply Protected Route in `App.tsx`
 
 - Insert the `import ProtectedRoute` statement.
 - Replace the `<Route path="/dashboard"` statement.
@@ -145,14 +148,14 @@ import Dashboard from "./pages/Dashboard"; // already created earlier
           />
 ```
 
-✅ Now, `/dashboard` can *only* be viewed if logged in
-✅ Page refresh still works because Supabase session persists
-✅ Typing the URL manually won’t bypass protection
+:white_check_mark: Now, `/dashboard` can *only* be viewed if logged in <br/>
+:white_check_mark: Page refresh still works because Supabase session persists <br/>
+:white_check_mark: Typing the URL manually won’t bypass protection
 
 
 ---
 
-## 🧪 Testing Checklist
+## :test_tube: Testing Checklist
 
 | Test                                        | Expected Result                  |
 | ------------------------------------------- | -------------------------------- |
@@ -168,7 +171,7 @@ In **Part 4 – React + Supabase Authentication**, we configured **RLS** as soon
 
 In this exercise we secured our front-end with React's **Protected Routes**. We should now have a properly secure application at this point.
 
-📌 When creating a new full stack application always secure in this order **database protection → front-end protection**.
+:pushpin: When creating a new full stack application always secure in this order **database protection → front-end protection**.
 
 ---
 
@@ -176,12 +179,12 @@ In this exercise we secured our front-end with React's **Protected Routes**. We 
 
 In Part 6 we will be Building the **Admin User Manager UI**
 
-✔️ Show all users (admin only)
-✔️ Add new users button
-✔️ Update existing users button
-✔️ Demonstrate Supabase CRUD queries
-✔️ Modal form for Create/Edit user
+:heavy_check_mark: Show all users (admin only) <br/>
+:heavy_check_mark: Add new users button <br/>
+:heavy_check_mark: Update existing users button <br/>
+:heavy_check_mark: Demonstrate Supabase CRUD queries <br/>
+:heavy_check_mark: Modal form for Create/Edit user <br/>
 
 ---
 
-[Back](04.5-React_Login_State.md) -- [Next](06-Admin_User_Manager_UI.md)
+[Back](./04.5-React_Login_State.md) -- [Next](./06-Admin_User_Manager_UI.md)

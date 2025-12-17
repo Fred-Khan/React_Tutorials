@@ -5,12 +5,12 @@
 
 ### :dart: Learning Goals
 
-:white_check_mark: Connect a React app to a Supabase backend using `.env` variables
-:white_check_mark: Log in users securely using `supabase.auth.signInWithPassword()`
-:white_check_mark: Create and protect a `profiles` table in Supabase
-:white_check_mark: Use **Row Level Security (RLS)** to restrict access based on user roles
-:white_check_mark: Redirect logged-in users to a dashboard page
-:white_check_mark: Prepare for **Part 5** where we’ll create *protected routes* and *user sessions*
+:white_check_mark: Connect a React app to a Supabase backend using `.env` variables <br/>
+:white_check_mark: Log in users securely using `supabase.auth.signInWithPassword()` <br/>
+:white_check_mark: Create and protect a `profiles` table in Supabase <br/>
+:white_check_mark: Use **Row Level Security (RLS)** to restrict access based on user roles <br/>
+:white_check_mark: Redirect logged-in users to a dashboard page <br/>
+:white_check_mark: Prepare for **Part 5** where we’ll create **protected routes** and **user sessions** <br/>
 
 ---
 
@@ -24,8 +24,11 @@ Supabase provides:
 * 🪪 A flexible database for extra user info (`profiles`)
 * :gear: Powerful **Row Level Security** to protect your data
 
-We’ll use **Supabase Auth** for sign-in and a **`profiles` table** for user details.
-This means no passwords are ever stored manually — Supabase handles it all safely.
+We’ll use **Supabase `auth.users`**  for sign-in and a **`profiles` table** for user details.
+
+![Basic Layout](./assets/ERD_Auth_Users_Profiles.png)
+
+**:information_source: This means no passwords are ever stored manually — Supabase handles it all safely.**
 
 ---
 
@@ -38,27 +41,29 @@ Open a **new terminal** in VS-Code: (Click on the plus button as shown in the sc
 ![Basic Layout](../02-React_Layout_and_Routing/assets/New_Terminal.png)
 
 
-In your project folder, run:
+1. In your project folder, run:
 
 ```bash
 npm install @supabase/supabase-js
 ```
 
-When it has completed installing, you can close the terminal with:
+2. When it has completed installing, you can close the terminal with:
 
 ```bash
 exit
 ```
 
 
-Then create a **`.env`** file in the **:exclamation: root :exclamation:** of your project folder and add placeholders.
-We'll fill these with real values after creating the Supabase project:
+3. Create a **`.env`** file in the **:exclamation: root :exclamation:** of your project folder and add placeholders below:
 
 ```bash
+# !!! DO NOT UPLOAD THIS FILE TO GITHUB !!!
 VITE_SUPABASE_URL=https://your-project-url.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
+> We'll fill these with real values later; after creating the Supabase project.
 
+:bulb: The directory tree below shows where to put your **`.env`** file
 ```
 react-auth-demo/    ⬅️ Project Root Folder
 ├── node_modules/
@@ -69,8 +74,11 @@ react-auth-demo/    ⬅️ Project Root Folder
 ├── index.html
 ```
 
-> :brain: **Tip:** Never commit `.env` to GitHub — add it to your `.gitignore`.
-> Restart your app after editing `.env` to apply changes.
+:brain: **Tip:** <mark>Never commit **.env** to GitHub</mark>
+
+4. Open the `.gitignore` file and add **`.env`** at the bottom of the file then save changes.
+
+> You may need to restart your app after editing `.env` to apply changes.
 
 <details>
     <summary>Show me more information about .env files</summary>
@@ -94,7 +102,7 @@ DEBUG=true
 
 ---
 
-## :white_check_mark:  Best Practices for Using `.env` Files
+### :white_check_mark:  Best Practices for Using `.env` Files
 
 - **Keep it out of version control**: Add `.env` to your `.gitignore` so it’s not pushed to GitHub or other repositories.
 - **Use descriptive variable names**: Make it easy to understand what each variable does.
@@ -104,7 +112,7 @@ DEBUG=true
 
 ---
 
-## :closed_lock_with_key: Security Tips
+### :closed_lock_with_key: Security Tips
 
 - **Never expose secrets**: Don’t log or print sensitive values from `.env` files.
 - **Use secret managers in production**: Tools like AWS Secrets Manager, Azure Key Vault, or HashiCorp Vault are safer than `.env` files for production secrets.
@@ -117,7 +125,7 @@ DEBUG=true
 
 ## :jigsaw: 2. Create `supabaseClient.tsx`
 
-Create a new file:
+1. Create a new file:
 
 :page_facing_up: `src/supabaseClient.tsx`
 
@@ -135,7 +143,7 @@ export const supabase = createClient(supabaseUrl!, supabaseAnonKey!); // The `!`
 
 ```
 
-:white_check_mark: This file exports the connected Supabase client.
+:white_check_mark: This file exports the connected Supabase client. <br/>
 :white_check_mark: You’ll import this client into any page that needs database or auth features.
 
 ---
@@ -210,44 +218,44 @@ It’s the difference between “anyone can read this table” vs “only this u
 Without RLS, every authenticated user could see everyone’s data.
 With RLS, access is restricted row by row using policies.
 
-#### 💡 Why RLS Matters
+#### :bulb: Why RLS Matters
 
 Even if users can't see a page in React, they can still:
 
-❌ Use dev tools to call the API
-❌ Send HTTP requests directly to Supabase
-❌ Query data that should be restricted
+:x: Use dev tools to call the API <br/>
+:x: Send HTTP requests directly to Supabase <br/>
+:x: Query data that should be restricted
 
 > **RLS stops that — even if the user knows the database URL.**
 
 ---
 
-### 🧠 RLS Rules We Need
+### :brain: RLS Rules We Need
 | Table      | Who can access?            | Policy                                    |
 | ---------- | -------------------------- | ----------------------------------------- |
 | `profiles` | Logged-in users            | Can `SELECT` only *their own row*         |
 | `profiles` | Admins (`is_admin = true`) | Can `SELECT`, `INSERT`, `UPDATE` all rows |
-| `profiles` | Everyone else              | ❌ No access                               |
+| `profiles` | Everyone else              | :x: No access                               |
 
-✅ This prevents normal users from seeing or editing other users’ info
-✅ This allows our admin dashboard to work safely later
+:white_check_mark: This prevents normal users from seeing or editing other users’ info <br/>
+:white_check_mark: This allows our admin dashboard to work safely later
 
 ---
 
 ### :compass: Step-by-Step in Supabase Dashboard
 
-There are two ways you can do this. Via the **GUI** or by running an SQL command in **SQL Editor**. 
+There are two ways you can do this. Via the [GUI](#method-1-using-the-gui) or by running an SQL command in [SQL Editor](#method-2-using-the-sql-editor). 
 
-### Method 1: Using the GUI:
+### Method 1: Using the GUI.
 
 1. Go to **Table Editor → profiles**
 2. Click on **RLS disabled** button
 3. Click **Enable RLS for this table**
 4. Click **Enable RLS** in the "Confirm ..." dialogue
 
-✅ This locks the table until policies are added
-✅ Without policy, nobody can read or write anything (even admins)
-✅ Now we add the policies
+:white_check_mark: This locks the table until policies are added <br/>
+:white_check_mark: Without policy, nobody can read or write anything (even admins) <br/>
+:white_check_mark: Now we add the policies
 
 Click on **Add RLS policy** button
 
@@ -278,8 +286,8 @@ using (
 ```
 Click **Save policy**
 
-✅ Allows logged-in users to **read** THEIR OWN row only
-✅ They cannot **read** other users’ data
+:white_check_mark: Allows logged-in users to **read** THEIR OWN row only <br/>
+:white_check_mark: They cannot **read** other users’ data
 
 ---
 
@@ -309,8 +317,8 @@ using (
 ```
 Click **Save policy**
 
-➡ Lets users **update** THEIR OWN row only
-✅ They cannot **update** other users’ data
+:arrow_right: Lets users **update** THEIR OWN row only <br/>
+:white_check_mark: They cannot **update** other users’ data
 
 ---
 
@@ -353,7 +361,7 @@ When RLS is enabled, lack of a delete policy means deletes are automatically blo
 
 ---
 
-### Method 2: Using the SQL Editor:
+### Method 2: Using the SQL Editor
 If you did not wish to click around the interface or have a problem with the resultant RLS Policies, you can copy and paste the SQL command below into SQL Editor to create the 3 policies at once. You may get a **"Destructive Query Warning"**. 
 Click **Run this query**.
 
@@ -405,7 +413,7 @@ WITH CHECK (
 
 
 ```
-#### ✅ Explanation of each part
+#### :white_check_mark: Explanation of each part
 
 * `auth.uid() = id`: ensures the logged-in user’s UID matches the `id` column of the row in `profiles` table.
 * `(auth.jwt() ->> 'is_admin')::boolean = true`: reads the `is_admin` claim from the user’s JWT token, casts it to boolean, and checks if it’s `true`.
@@ -414,17 +422,17 @@ WITH CHECK (
 
 ---
 
-### 🧠 Final Table Security Result
+### :brain: Final Table Security Result
 
 | User Type       | SELECT         | INSERT     | UPDATE     | DELETE     |
 | --------------- | -------------- | ---------- | ---------- | ---------- |
-| Normal user     | ✅ Own row only | ❌          | ✅ Own row only | ❌          |
-| Admin user      | ✅ All rows     | ✅ All rows | ✅ All rows | ✅ All rows |
-| Logged out user | ❌ Nothing      | ❌          | ❌          | ❌          |
+| Normal user     | :white_check_mark: Own row only | :x:          | :white_check_mark: Own row only | :x:          |
+| Admin user      | :white_check_mark: All rows     | :white_check_mark: All rows | :white_check_mark: All rows | :white_check_mark: All rows |
+| Logged out user | :x: Nothing      | :x:          | :x:          | :x:          |
 
-✅ This protects the database even if frontend is bypassed
-✅ Admin dashboard will work later because their RLS access allows it
-✅ Normal users cannot impersonate or modify anyone else
+:white_check_mark: This protects the database even if frontend is bypassed <br/>
+:white_check_mark: Admin dashboard will work later because their RLS access allows it <br/>
+:white_check_mark: Normal users cannot impersonate or modify anyone else
 
 ---
 
@@ -471,10 +479,10 @@ VALUES ('your-copied-user-id', 'App', 'User01', 'user01@domain.local', false);
 
 ## 7. Create a Custom Access Token Hook Security Definer that adds is_admin
 
-**Open Supabase → SQL Editor → New Query** and paste the function below. This function reads `public.profiles` for the logging-in user and adds an `is_admin` boolean into the token claims.
+**Open Supabase → SQL Editor → New Query** and paste the function below. This function reads `public.profiles` for the logged-in user and adds an `is_admin` boolean into the token claims if their account has the `is_admin` column value set as 1 in the profiles table.
 
-> Note: this code runs when a token is issued — it’s safe to query `profiles` here.
-Paste and run as a single query as **postgres role**.
+> Note: this code runs when a token is issued.
+> Paste and run as a single query as **postgres role**.
 
 ```sql
 
@@ -511,9 +519,9 @@ $$;
 
 ---
 
-### 🧰 Next: Make sure the hook can read the profiles table
+### :toolbox: Next: Make sure the hook can read the profiles table
 
-Because this hook runs as the Auth service (not as a normal user), you must grant it permission to read that table.
+Because this hook runs as the Supabase Auth service (not as a normal user account), you must grant it permission to read that table. We will grant select permission to postgress and the services role.
 
 **SQL Editor → New Query** then paste and run the function below and run as **postgres role**:
 
@@ -522,7 +530,7 @@ grant select on public.profiles to postgres;
 grant select on public.profiles to service_role;
 ```
 
-Then restart your project from the Dashboard → Settings → General → Restart project
+Then restart your project from the **Dashboard** → **Project Settings** → **Project availability** → **Restart project**
 
 ---
 
@@ -531,7 +539,7 @@ Then restart your project from the Dashboard → Settings → General → Restar
 1. Open your Supabase project → left menu → **Authentication**.
 2. Click on **Auth Hooks** 
 3. Click **Add hooks** or **Add a new hook**
-4. Select **Customize Access Toekn (JWT) Claims hook**
+4. Select **Customize Access Token (JWT) Claims hook**
 4. In that UI, under **Postgres function** select the function we created: `custom_access_token_hook`
 5. Once selected you will see the statements box auto-populate with the following statements:
 
@@ -588,23 +596,35 @@ with check (
 
 
 
-## 9. 🔍 Quick sanity check
+## 9. :mag: Quick sanity check
 
-To confirm everything is working end-to-end, in SQL Editor **impersonate admin** and run these SQL tests:
+To confirm everything is working end-to-end, in SQL Editor **impersonate admin@domain.local** and run these SQL tests:
 
 ```sql
--- Should show "is_admin": true for admin and "is_admin" : false if user.
+-- Query 1:
+-- Should show "is_admin": true for admin, false for user and NULL for everything else
 select (auth.jwt()->>'is_admin')::boolean as is_admin;
 
--- Should return multiple rows for admin and own row for user.
+-- Query 2:
+-- Should return multiple rows for admin and postgres, none for anon and own row for user.
 select id, email, is_admin from profiles;
 
--- If you wsh to generate the full JWT output, run the following, then right click the returned row and choose View Cell Content.
+-- If you wsh to generate the full Java Web Token output, run the following, then right click the returned row and choose View Cell Content.
 select auth.jwt();
 
 ```
 
 It is recommended to **impersonate user** and re-run the SQL tests to ensure there are no unintended results.
+
+## :clipboard: Expected Test Results Table
+
+| Role      | Query 1: `(auth.jwt()->>'is_admin')::boolean as is_admin` | Query 2: `select id, email, is_admin from profiles;` |
+|-----------|-----------------------------------------------------------|------------------------------------------------------|
+| **admin** | `true`                                                    | Multiple rows (all profiles visible)                 |
+| **postgres** | `NULL` (no `is_admin` claim in JWT)                     | Multiple rows (all profiles visible)                 |
+| **user**  | `false`                                                   | Own row only (restricted to their profile)           |
+| **anon**  | `NULL`                                                    | No rows returned                                     |
+
 
 ---
 
@@ -727,8 +747,8 @@ export default function Login() {
 }
 ```
 
-:white_check_mark: Uses `supabase.auth.signInWithPassword()`
-:white_check_mark: Redirects on success using `useNavigate()`
+:white_check_mark: Uses `supabase.auth.signInWithPassword()` <br/>
+:white_check_mark: Redirects on success using `useNavigate()` <br/>
 :white_check_mark: Displays red error text if login fails
 
 ---
@@ -800,9 +820,9 @@ export default function App() {
 
 :white_check_mark: You now have a Supabase authentication working front-end to back-end.
 
-![Alert](./assets/Police_Flashing_Lights_5.gif)
-However, the routes are still **:warning: not protected yet :warning:** as illustrated in **Test 7**. 
-This shows the difference between **UI display logic** and **real access control**, which is essential for cybersecurity aware development.
+![Alert](./assets/Police_Flashing_Lights_5.gif) <br/>
+However, the routes are still **:warning: not protected yet :warning:** as illustrated in **Test 7**. <br/> 
+This shows the difference between **UI display logic** and **real access control**, which is essential for cybersecurity aware development. <br/>
 ![Alert](./assets/Police_Flashing_Lights_5.gif)
 
 ---
@@ -837,15 +857,15 @@ This shows the difference between **UI display logic** and **real access control
 
 In **Part 4.5 – Making the Navbar Aware of Login State + Adding Logout**, we will:
 
-✅ Detect when a user is logged in using Supabase Auth
-✅ Show Login when logged out, but Logout + Dashboard when logged in
-✅ Trigger Supabase’s signOut() function and redirect the user
-✅ Understand what onAuthStateChange() does and why it matters
-✅ Understand the difference between UI-based access and Protected Routes
+:heavy_check_mark: Detect when a user is logged in using Supabase Auth <br/>
+:heavy_check_mark: Show Login when logged out, but Logout + Dashboard when logged in <br/>
+:heavy_check_mark: Trigger Supabase’s signOut() function and redirect the user <br/>
+:heavy_check_mark: Understand what onAuthStateChange() does and why it matters <br/>
+:heavy_check_mark: Understand the difference between UI-based access and Protected Routes
 
 ---
 
-[Back](../02-React_Layout_and_Routing/03-Create_A_Login_Form.md) -- [Next](04.5-React_Login_State.md)
+[Back](../02-React_Layout_and_Routing/03-Create_A_Login_Form.md) -- [Next](./04.5-React_Login_State.md)
 
 <!--
 In **Part 5 – Protected Routes and User Sessions**, you will:

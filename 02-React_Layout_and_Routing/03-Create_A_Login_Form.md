@@ -320,8 +320,8 @@ const { data, error } = await supabase.auth.signInWithPassword({
 
 Which will:
 
-:white_check_mark: Check login credentials against Supabase
-:white_check_mark: Return an authenticated user session
+:white_check_mark: Check login credentials against Supabase <br/>
+:white_check_mark: Return an authenticated user session <br/>
 :white_check_mark: Redirect the user to a protected page
 
 ---
@@ -338,7 +338,7 @@ Which will:
 
 
 
-:white_check_mark: All routing still works
+:white_check_mark: All routing still works <br/>
 :white_check_mark: New UI appears only on `/login`
 
 
@@ -362,12 +362,12 @@ Which will:
 
 In **Part 4**, we will:
 
-:white_check_mark: Create a Supabase project
-:white_check_mark: Connect React app using environment variables
-:white_check_mark: Replace `console.log` with real `supabase.auth.signInWithPassword()`
-:white_check_mark: Handle success :white_check_mark: and error messages :x:
-:white_check_mark: Redirect user to a protected page after login
+:heavy_check_mark: Create a Supabase project <br/>
+:heavy_check_mark: Connect React app using environment variables <br/>
+:heavy_check_mark: Replace `console.log` with real `supabase.auth.signInWithPassword()` <br/>
+:heavy_check_mark: Handle success :white_check_mark: and error messages :x: <br/>
+:heavy_check_mark: Redirect user to a protected page after login
 
 ---
 
-[Back](02-Introducing_React_Router.md) -- [Next](../03-React_Supabase_Auth/04-Login_Using_Supabase_Auth.md)
+[Back](./02-Introducing_React_Router.md) -- [Next](../03-React_Supabase_Auth/04-Login_Using_Supabase_Auth.md)

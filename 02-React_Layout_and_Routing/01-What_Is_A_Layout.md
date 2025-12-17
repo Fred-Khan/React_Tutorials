@@ -1,4 +1,3 @@
-`
 # :books: Part 1 – Understanding Shared Layouts in React
 
 ### :dart: Learning Goals
@@ -16,7 +15,7 @@ A **layout** is a shared structure that stays the same across multiple pages of 
 
 Most websites have UI elements that **don’t change**, such as:
 
-:white_check_mark: A top navigation bar
+:white_check_mark: A top navigation bar <br/>
 :white_check_mark: A footer
 
 
@@ -327,10 +326,10 @@ You should now have a page that looks like the screenshot below. This may not lo
 
 We will add **React Router**, so pages like **Home**, **About** and **Login** become real routes:
 
-:white_check_mark: Layout stays
-:white_check_mark: Navbar becomes real navigation (`<NavLink>`)
-:white_check_mark: Content updates **without re-loading the page**
+:heavy_check_mark: Layout stays <br/>
+:heavy_check_mark: Navbar becomes real navigation (`<NavLink>`) <br/>
+:heavy_check_mark: Content updates **without re-loading the page**
 
 ---
 
-[Back](../01-React_Setup_and_Component/05-Guess_The_Number_Game.md) -- [Next](02-Introducing_React_Router.md)
+[Back](../01-React_Setup_and_Component/05-Guess_The_Number_Game.md) -- [Next](./02-Introducing_React_Router.md)

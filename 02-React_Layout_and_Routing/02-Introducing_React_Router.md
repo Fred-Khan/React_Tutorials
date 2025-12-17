@@ -21,10 +21,11 @@ That means:
 - When users click a link, React **swaps components in and out**, but the page is not reloaded.
 - This makes apps faster and feel more like desktop software.
 
-:white_check_mark: **React Router** gives us navigation **without reloading the page**
+:white_check_mark: **React Router** gives us navigation **without reloading the page** <br/>
 :x: HTML `<a href="">` forces a **full page refresh** and breaks the SPA model
 
 In the previous exercise, we used `<a>` tags for our navigation links such as **Home**, **About** and **Login** in **`Navbar.tsx`**. 
+
 In this exercise we will **replace `<a>` with `<NavLink>`** in **Navbar.tsx** and use React Router for navigation instead.
 
 ---
@@ -74,7 +75,7 @@ src/
 
 ## :page_facing_up: 3 – Create `Home.tsx`
 
-* This will now be our home page file instead of using the default `app.tsx` file. 
+This will now be our home page file instead of using the default `app.tsx` file. 
 
 :memo: `src/pages/Home.tsx`
 
@@ -171,7 +172,7 @@ export default function App() {
 }
 ```
 
-:white_check_mark: The Layout still wraps everything, so Navbar + Footer stay visible.
+:white_check_mark: The Layout still wraps everything, so Navbar + Footer stay visible. <br/>
 :white_check_mark: Only the middle content changes based on route.
 
 ---
@@ -183,9 +184,9 @@ You should now have a page with the **Home**, **About** and **Login** link worki
 ![Basic Layout](./assets/Links_Using_React_Route.png)
 
 Test all three links in the Navbar if you have not done so to ensure your code is working correctly
-   :white_check_mark: Home loads
-   :white_check_mark: About loads but without content
-   :white_check_mark: Login loads placeholder page
+   :white_check_mark: Home loads <br/>
+   :white_check_mark: About loads but without content <br/>
+   :white_check_mark: Login loads placeholder page <br/>
    :books: Layout stays on screen for all pages
 <!-- Add Instruction to upload to Github here -->
 
@@ -260,9 +261,9 @@ Using the information you have learned, create and About page that has:
 
 ### :cockroach: Test and debug
 Once you completed the exercise, please make sure to re-test all three links in the Navbar again to ensure they are working as intended
-   :white_check_mark: Home loads as before
-   :white_check_mark: About loads with the new content
-   :white_check_mark: Login loads placeholder page
+   :white_check_mark: Home loads as before <br/>
+   :white_check_mark: About loads with the new content <br/>
+   :white_check_mark: Login loads placeholder page <br/>
    :books: Layout stays on screen for all pages
 
 <!-- 5. Commit your changes with the message "Added About page and connected React Router navigation". -->
@@ -290,8 +291,8 @@ You should now see the link appear in **<span style="color:yellow; background:#0
 Ensure there are no warnings or errors in the **PROBLEMS** tab of your terminal panel.
 Re-test and debug any issues that come up. 
 
-:white_check_mark: This gives users feedback about **which page they are currently on**
-:white_check_mark: Helps accessibility and UI clarity
+:white_check_mark: This gives users feedback about **which page they are currently on** <br/>
+:white_check_mark: Helps accessibility and UI clarity <br/>
 :white_check_mark: Works automatically — no JavaScript needed
 
 ### :question: Why don't we just delete the colour:white rule for fonts (line 59)? 
@@ -377,10 +378,10 @@ export default function Layout() {
 
 In **Part 3**, we will:
 
-:white_check_mark: Create a real **Login page UI**
-:white_check_mark: Learn how to handle **form inputs** in React
-:white_check_mark: Begin moving toward **state management** and **authentication flows**
+:heavy_check_mark: Create a real **Login page UI** <br/>
+:heavy_check_mark: Learn how to handle **form inputs** in React <br/>
+:heavy_check_mark: Begin moving toward **state management** and **authentication flows**
 
 ---
 
-[Back](01-What_Is_A_Layout.md) -- [Next](03-Create_A_Login_Form.md)
+[Back](./01-What_Is_A_Layout.md) -- [Next](./03-Create_A_Login_Form.md)

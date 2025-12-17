@@ -370,4 +370,4 @@ You’ve nailed the basics—now it’s time to add your own twist. Choose one (
 
 ---
 
-[Back](04-React_JSX_and_Component.md) -- [Next](../02-React_Layout_and_Routing/01-What_Is_A_Layout.md)
+[Back](./04-React_JSX_and_Component.md) -- [Next](../02-React_Layout_and_Routing/01-What_Is_A_Layout.md)

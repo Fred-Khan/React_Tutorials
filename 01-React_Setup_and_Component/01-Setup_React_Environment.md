@@ -137,4 +137,4 @@ Now every **new** terminal opens in your preferred shell.
 
 ---
 
-[Next](02-Scaffold_React_App.md)
+[Next](./02-Scaffold_React_App.md)
