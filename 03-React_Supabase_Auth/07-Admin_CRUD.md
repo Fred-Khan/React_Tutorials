@@ -57,7 +57,25 @@ No delete functionality included, we’ll add `is_deleted` later to denote delet
 
 > **Purpose:** Create an auth user (service role), insert `profiles` row. Verify the caller token belongs to an admin.
 
-We will deploy the edge function using the built in browser **Editor** in Supabase. 
+### :thinking: What Are Supabase Edge Functions?
+- **Globally distributed**: Functions run at edge locations worldwide, reducing latency for users.
+- **Security**: Keep API keys and secrets on the server, away from the frontend.
+- **Serverless**: No need to manage servers; functions scale automatically.
+- **Built with Deno**: TypeScript-first runtime and is secure by default.
+- **Use cases**:
+  - Handling **webhooks** (e.g., Stripe payments, SendGrid emails).
+  - Running **secure backend logic** (e.g., validating JWTs, applying rate limits).
+  - Performing **heavy tasks** like image processing, PDF generation, or batch operations.
+
+
+
+### ⚙️ How Edge Functions Work
+1. **Request enters edge gateway** → Routes traffic, validates auth headers/JWTs, applies rules.
+2. **Auth & policies applied** → Functions can enforce Supabase policies or custom logic.
+3. **Function executes** → Runs your TypeScript/Deno code, returning a response.
+
+
+#### We will deploy our edge function using the built in browser **Editor** in Supabase. 
 1. Open the Edge Functions editor:
     1. Click on **Edge Funtions** in the menu, 
     2. Click on **Functions**
